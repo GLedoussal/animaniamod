@@ -171,7 +171,7 @@ public class GenericBehavior
 	{
 		World world = entity.world;
 
-		float growthTick = AnimaniaConfig.careAndFeeding.childGrowthTick * SeasonsHelper.getSeasonGrowthCoef(world);
+		float growthTick = AnimaniaConfig.careAndFeeding.childGrowthTick / SeasonsHelper.getSeasonGrowthCoef(world);
 
 		entity.setGrowingAge((int) -((0.85 - entity.getEntityAge()) * 100 * AnimaniaConfig.careAndFeeding.childGrowthTick));
 
