@@ -47,6 +47,8 @@ import net.minecraft.world.World;
 import net.minecraftforge.fluids.FluidActionResult;
 import net.minecraftforge.fluids.FluidUtil;
 import net.minecraftforge.fml.common.Loader;
+import sereneseasons.api.season.Season;
+import sereneseasons.api.season.SeasonHelper;
 
 public class EntityCowBase extends EntityAnimaniaCow implements TOPInfoProviderMateable, IMateable, IImpregnable
 {
@@ -230,7 +232,6 @@ public class EntityCowBase extends EntityAnimaniaCow implements TOPInfoProviderM
 	@Override
 	public EntityCowBase createChild(EntityAgeable ageable)
 	{
-
 		return null;
 	}
 

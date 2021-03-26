@@ -7,19 +7,10 @@ import java.util.UUID;
 import javax.annotation.Nullable;
 
 import com.animania.Animania;
-import com.animania.api.interfaces.AnimaniaType;
-import com.animania.api.interfaces.IAgeable;
-import com.animania.api.interfaces.IAnimaniaAnimal;
-import com.animania.api.interfaces.IBlinking;
-import com.animania.api.interfaces.IChild;
-import com.animania.api.interfaces.IFoodEating;
-import com.animania.api.interfaces.IImpregnable;
-import com.animania.api.interfaces.IMateable;
-import com.animania.api.interfaces.ISleeping;
-import com.animania.api.interfaces.ISterilizable;
-import com.animania.api.interfaces.IVariant;
+import com.animania.api.interfaces.*;
 import com.animania.common.entities.generic.ai.GenericAIEatGrass;
 import com.animania.common.helper.AnimaniaHelper;
+import com.animania.common.helper.SeasonsHelper;
 import com.animania.config.AnimaniaConfig;
 
 import net.minecraft.entity.Entity;
@@ -150,11 +141,37 @@ public class GenericBehavior
 			}
 		}
 
+		if (entity instanceof ICold)
+		{
+			if(((ICold) entity).getCold())
+			{
+				entity.addPotionEffect(new PotionEffect(MobEffects.WEAKNESS, 2, 1, false, false));
+
+				if (AnimaniaConfig.gameRules.animalsColdDamage)
+				{
+					int damageTimer = ((ICold) entity).getColdDamageTimer();
+
+					if (damageTimer >= AnimaniaConfig.careAndFeeding.coldTimer)
+					{
+						entity.attackEntityFrom(DamageSource.STARVE, 1f);
+						((ICold) entity).setColdDamageTimer(0);
+					}
+
+					if (!entity.getSleeping()) {
+						damageTimer++;
+						((ICold) entity).setColdDamageTimer(damageTimer);
+					}
+				}
+			}
+		}
+
 	}
 
 	public static <T extends EntityAgeable & IFoodEating & ISleeping & IChild> void livingUpdateChild(T entity, Class<? extends EntityLivingBase> motherClass)
 	{
 		World world = entity.world;
+
+		float growthTick = AnimaniaConfig.careAndFeeding.childGrowthTick * SeasonsHelper.getSeasonGrowthCoef(world);
 
 		entity.setGrowingAge((int) -((0.85 - entity.getEntityAge()) * 100 * AnimaniaConfig.careAndFeeding.childGrowthTick));
 
@@ -166,7 +183,7 @@ public class GenericBehavior
 		ageTimer++;
 		entity.setAgeTimer(ageTimer);
 
-		if (ageTimer >= AnimaniaConfig.careAndFeeding.childGrowthTick)
+		if (ageTimer >= growthTick)
 			if (fed && watered && !entity.getSleeping())
 			{
 				entity.setAgeTimer(0);
@@ -498,6 +515,11 @@ public class GenericBehavior
 			if (child.getParentUniqueId() != null)
 				tag.setString("ParentUUID", child.getParentUniqueId().toString());
 		}
+
+		if (entity instanceof ICold)
+		{
+			tag.setBoolean("Cold", ((ICold) entity).getCold());
+		}
 	}
 
 	public static <T extends EntityAnimal & IFoodEating & ISleeping & IAgeable> void readCommonNBT(NBTTagCompound tag, T entity)
@@ -534,6 +556,11 @@ public class GenericBehavior
 		if (entity instanceof ISterilizable)
 		{
 			((ISterilizable) entity).setSterilized(tag.getBoolean("Sterilized"));
+		}
+
+		if (entity instanceof ICold)
+		{
+			((ICold) entity).setCold(tag.getBoolean("Cold"));
 		}
 
 		if (entity instanceof IChild)

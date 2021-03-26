@@ -25,6 +25,7 @@ import com.animania.api.data.AnimalContainer;
 import com.animania.api.data.EntityGender;
 import com.animania.api.interfaces.AnimaniaType;
 import com.animania.api.interfaces.IAnimaniaAnimalBase;
+import com.animania.api.interfaces.ICold;
 import com.animania.api.interfaces.IConvertable;
 import com.animania.common.entities.generic.GenericBehavior;
 import com.animania.common.entities.generic.ai.GenericAIAvoidEntity;
@@ -41,6 +42,8 @@ import com.animania.common.entities.generic.ai.GenericAIWatchClosest;
 import com.animania.common.handler.AddonHandler;
 import com.animania.common.handler.AddonInjectionHandler;
 import com.animania.common.helper.AnimaniaHelper;
+import com.animania.common.helper.SeasonsEnum;
+import com.animania.common.helper.SeasonsHelper;
 import com.animania.common.items.ItemEntityEgg;
 import com.animania.config.AnimaniaConfig;
 import com.google.common.base.Optional;
@@ -57,6 +60,7 @@ import net.minecraft.entity.passive.EntityWolf;
 import net.minecraft.entity.player.EntityPlayer;
 import net.minecraft.init.Blocks;
 import net.minecraft.init.Items;
+import net.minecraft.init.MobEffects;
 import net.minecraft.init.SoundEvents;
 import net.minecraft.item.EnumDyeColor;
 import net.minecraft.item.Item;
@@ -67,6 +71,8 @@ import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.network.datasync.DataParameter;
 import net.minecraft.network.datasync.DataSerializers;
 import net.minecraft.network.datasync.EntityDataManager;
+import net.minecraft.potion.PotionEffect;
+import net.minecraft.util.DamageSource;
 import net.minecraft.util.EnumHand;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -78,7 +84,7 @@ import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.relauncher.Side;
 import net.minecraftforge.fml.relauncher.SideOnly;
 
-public class EntityAnimaniaSheep extends EntitySheep implements IShearable, IAnimaniaAnimalBase, IConvertable
+public class EntityAnimaniaSheep extends EntitySheep implements IShearable, IAnimaniaAnimalBase, IConvertable, ICold
 {
 
 	public static final Set<ItemStack> TEMPTATION_ITEMS = Sets.newHashSet(AnimaniaHelper.getItemStackArray(FarmConfig.settings.sheepFood));
@@ -94,6 +100,7 @@ public class EntityAnimaniaSheep extends EntitySheep implements IShearable, IAni
 	protected static final DataParameter<Float> SLEEPTIMER = EntityDataManager.<Float> createKey(EntityAnimaniaSheep.class, DataSerializers.FLOAT);
 	protected static final DataParameter<Integer> DYE_COLOR = EntityDataManager.<Integer> createKey(EntityAnimaniaSheep.class, DataSerializers.VARINT);
 	protected static final DataParameter<Boolean> INTERACTED = EntityDataManager.<Boolean> createKey(EntityAnimaniaSheep.class, DataSerializers.BOOLEAN);
+	protected static final DataParameter<Boolean> COLD = EntityDataManager.<Boolean>createKey(EntityAnimaniaSheep.class, DataSerializers.BOOLEAN);
 
 	private static final String[] SHEEP_TEXTURES = new String[] { "black", "white", "brown" };
 
@@ -103,6 +110,7 @@ public class EntityAnimaniaSheep extends EntitySheep implements IShearable, IAni
 	protected int fedTimer;
 	protected int wateredTimer;
 	protected int damageTimer;
+	protected int coldDamageTimer;
 	public SheepType sheepType;
 	public GenericAIEatGrass<EntityAnimaniaSheep> entityAIEatGrass;
 	protected boolean mateable = false;
@@ -178,6 +186,7 @@ public class EntityAnimaniaSheep extends EntitySheep implements IShearable, IAni
 		this.dataManager.register(EntityAnimaniaSheep.SHEARED, false);
 		this.dataManager.register(EntityAnimaniaSheep.SHEARED_TIMER, Integer.valueOf(AnimaniaConfig.careAndFeeding.woolRegrowthTimer + this.rand.nextInt(500)));
 		this.dataManager.register(EntityAnimaniaSheep.SLEEPING, false);
+		this.dataManager.register(EntityAnimaniaSheep.COLD, false);
 		this.dataManager.register(EntityAnimaniaSheep.SLEEPTIMER, Float.valueOf(0.0F));
 		this.dataManager.register(EntityAnimaniaSheep.DYE_COLOR, Integer.valueOf(EnumDyeColor.WHITE.getMetadata()));
 		this.dataManager.register(INTERACTED, false);
@@ -301,6 +310,11 @@ public class EntityAnimaniaSheep extends EntitySheep implements IShearable, IAni
 	}
 
 	@Override
+	public DataParameter<Boolean> getColdParam() {
+		return COLD;
+	}
+
+	@Override
 	public void eatGrassBonus()
 	{
 
@@ -355,6 +369,10 @@ public class EntityAnimaniaSheep extends EntitySheep implements IShearable, IAni
 		boolean sheared = this.getSheared();
 		if (sheared)
 		{
+			if (!this.getCold() && SeasonsHelper.getSeason(this.world).equals(SeasonsEnum.WINTER)) {
+				this.setCold(true);
+			}
+
 			int shearedTimer = this.getWoolRegrowthTimer();
 			shearedTimer--;
 			this.setWoolRegrowthTimer(shearedTimer);
@@ -363,6 +381,10 @@ public class EntityAnimaniaSheep extends EntitySheep implements IShearable, IAni
 				this.setSheared(false);
 
 			}
+		}
+		else if (this.getCold())
+		{
+			this.setCold(false);
 		}
 
 		super.onLivingUpdate();
@@ -610,6 +632,16 @@ public class EntityAnimaniaSheep extends EntitySheep implements IShearable, IAni
 	public void setDamageTimer(int i)
 	{
 		damageTimer = i;
+	}
+
+	@Override
+	public int getColdDamageTimer() {
+		return coldDamageTimer;
+	}
+
+	@Override
+	public void setColdDamageTimer(int coldDamageTimer) {
+		this.coldDamageTimer = coldDamageTimer;
 	}
 
 	@Override

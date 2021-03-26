@@ -10,6 +10,7 @@ import com.animania.api.interfaces.IMateable;
 import com.animania.api.interfaces.ISleeping;
 import com.animania.api.interfaces.ISterilizable;
 import com.animania.common.helper.AnimaniaHelper;
+import com.animania.common.helper.SeasonsHelper;
 import com.animania.config.AnimaniaConfig;
 
 import net.minecraft.entity.EntityCreature;
@@ -48,7 +49,11 @@ public class GenericAIMate<T extends EntityCreature & IMateable & IFoodEating & 
 
 		this.delayCounter++;
 
-		// System.out.println(delayCounter);
+		if (AnimaniaConfig.gameRules.preventMatingSeasons) {
+			if (!SeasonsHelper.seasonIsIn(AnimaniaConfig.gameRules.matingSeasons, theWorld)) {
+				return false;
+			}
+		}
 
 		if (this.delayCounter > AnimaniaConfig.gameRules.ticksBetweenAIFirings)
 		{

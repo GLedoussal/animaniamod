@@ -1,5 +1,7 @@
 package com.animania.config;
 
+import com.animania.common.helper.SeasonsEnum;
+import com.animania.common.helper.SeasonsHelper;
 import net.minecraftforge.common.config.Config.Comment;
 import net.minecraftforge.common.config.Config.RequiresMcRestart;
 
@@ -88,6 +90,40 @@ public class CommonConfig
 		@Comment("Allow Squids to Spawn in Fresh Water")
 		public boolean spawnFreshWaterSquids = true;
 
+		@Comment("Prevent mating during given seasons")
+		public boolean preventMatingSeasons = false;
+
+		@Comment("Mating seasons")
+		public String[] matingSeasons = { "SUMMER", "SPRING" };
+
+		@Comment("Spring growth coefficient")
+		public float springGrowthCoef = 1f;
+
+		@Comment("Summer growth coefficient")
+		public float summerGrowthCoef = 1f;
+
+		@Comment("Autumn growth coefficient")
+		public float autumnGrowthCoef = .5f;
+
+		@Comment("Winter growth coefficient")
+		public float winterGrowthCoef = .25f;
+
+		@Comment("Winter egg laying coefficient")
+		public float winterEggLayCoef = .33f;
+
+		@Comment("Summer egg laying coefficient")
+		public float summerEggLayCoef = 1f;
+
+		@Comment("Spring egg laying coefficient")
+		public float springEggLayCoef = 1f;
+
+		@Comment("Autumn egg laying coefficient")
+		public float autumnEggLayCoef = .75f;
+
+		@Comment("Animals get damages from being cold")
+		public boolean animalsColdDamage = true;
+
+
 	}
 
 	public static class CareAndFeeding
@@ -118,6 +154,9 @@ public class CommonConfig
 		public int saltLickTick = 8000;
 		@Comment("Maximum uses of the salt lick")
 		public int saltLickMaxUses = 200;
+
+		@Comment("Ticks between animals taking cold damage")
+		public int coldTimer = 1000;
 
 		@Comment("Ingredients used to make slop (use # for meta)")
 		public String[] slopIngredients = { "minecraft:carrot", "minecraft:beetroot", "minecraft:potato", "minecraft:poisonous_potato", "minecraft:bread" };

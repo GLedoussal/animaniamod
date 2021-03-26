@@ -10,6 +10,7 @@ import com.animania.api.data.EntityGender;
 import com.animania.common.handler.AddonInjectionHandler;
 import com.animania.common.handler.CompatHandler;
 import com.animania.common.helper.AnimaniaHelper;
+import com.animania.common.helper.SeasonsHelper;
 import com.animania.compat.top.providers.entity.TOPInfoProviderBase;
 import com.animania.config.AnimaniaConfig;
 
@@ -200,7 +201,7 @@ public class EntityHenBase extends EntityAnimaniaChicken implements TOPInfoProvi
 		if (laid)
 		{
 			this.dataManager.set(EntityHenBase.LAID, true);
-			this.setLaidTimer(AnimaniaConfig.careAndFeeding.laidTimer + this.rand.nextInt(100));
+			this.setLaidTimer(Math.round(AnimaniaConfig.careAndFeeding.laidTimer / SeasonsHelper.getSeasonEggLayCoef(this.world)) + this.rand.nextInt(100));
 		} else
 			this.dataManager.set(EntityHenBase.LAID, false);
 	}
